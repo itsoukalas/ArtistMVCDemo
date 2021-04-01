@@ -14,7 +14,7 @@ namespace ArtistMVCDemo.Models
         public string Title{ get; set; }
 
         public string Youtube { get; set; }
-
+        [Display(Name ="Album")]
         public int AlbumId { get; set; }
         public Album album { get; set; }
     }

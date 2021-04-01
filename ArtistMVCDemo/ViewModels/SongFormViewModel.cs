@@ -9,6 +9,6 @@ namespace ArtistMVCDemo.ViewModels
     public class SongFormViewModel
     {
         public List<Album> Albums { get; set; }
-        public Song song { get; set; }
+        public Song Song { get; set; }
     }
 }

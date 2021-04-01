@@ -11,145 +11,133 @@ using ArtistMVCDemo.ViewModels;
 
 namespace ArtistMVCDemo.Controllers
 {
+   
     public class SongsController : Controller
     {
-        private ApplicationDbContext db ;
-
+        private ApplicationDbContext _context;
         public SongsController()
         {
-            db = new ApplicationDbContext();
+            _context = new ApplicationDbContext();
         }
-
-
         // GET: Songs
         public ActionResult Index()
         {
-            var songs = db.Songs.Include(s => s.album);
-            return View(songs.ToList());
-        }
+            var songs = _context
+                .Songs
+                .Include(s => s.album.Artist)
+                .ToList();
 
-        // GET: Songs/Details/5
+            return View(songs);
+        }
         public ActionResult Details(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Song song = db.Songs.Find(id);
+
+            var song = _context
+                .Songs
+                .Include(s => s.album.Artist)
+                .SingleOrDefault(s => s.ID == id);
+
             if (song == null)
             {
                 return HttpNotFound();
             }
+
             return View(song);
         }
 
         public ActionResult New()
         {
-            //Get Albums from the database
-            var albums = db.Albums.ToList();
-            //Init and fill the viewmodel
-            var viewModel = new SongFormViewModel()
+            // Get Albums from the database
+            var albums = _context.Albums.ToList();
+            // Init and fill the viewmodel
+            var viewmodel = new SongFormViewModel()
             {
-
-                Albums = albums,
-                song = new Song()
+                Song = new Song(),
+                Albums = albums
             };
-            //Return the appropriate view with viewmodel
-            return View("songForm", viewModel);
+            // Return the appropriate view with the viewmodel
+            return View("SongForm", viewmodel);
         }
 
-
-        // GET: Songs/Create
-        public ActionResult Create()
-        {
-            ViewBag.AlbumId = new SelectList(db.Albums, "ID", "Title");
-            return View();
-        }
-
-        // POST: Songs/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "ID,Title,AlbumId")] Song song)
-        {
-            if (ModelState.IsValid)
-            {
-                db.Songs.Add(song);
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-
-            ViewBag.AlbumId = new SelectList(db.Albums, "ID", "Title", song.AlbumId);
-            return View(song);
-        }
-
-        // GET: Songs/Edit/5
         public ActionResult Edit(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Song song = db.Songs.Find(id);
+
+            // get the song from the database
+            var song = _context
+                .Songs
+                .Include(s => s.album)
+                .SingleOrDefault(s => s.ID == id);
+
+            // Check if the song is null
             if (song == null)
             {
                 return HttpNotFound();
             }
-            ViewBag.AlbumId = new SelectList(db.Albums, "ID", "Title", song.AlbumId);
-            return View(song);
+
+            //Get the Albums from the database
+            var albums = _context.Albums.ToList();
+
+            // Init the viewmodel and fill it 
+            var viewModel = new SongFormViewModel()
+            {
+                Song = song,
+                Albums = albums
+            };
+
+            return View("SongForm", viewModel);
         }
 
-        // POST: Songs/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "ID,Title,AlbumId")] Song song)
+        public ActionResult Save(Song song)
         {
-            if (ModelState.IsValid)
+            if (song.Youtube != null)
             {
-                db.Entry(song).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                song.Youtube = $"https://www.youtube.com/embed/{song.Youtube}";
             }
-            ViewBag.AlbumId = new SelectList(db.Albums, "ID", "Title", song.AlbumId);
-            return View(song);
-        }
 
-        // GET: Songs/Delete/5
-        public ActionResult Delete(int? id)
-        {
-            if (id == null)
+            if (song.ID == 0)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                _context.Songs.Add(song);
             }
-            Song song = db.Songs.Find(id);
-            if (song == null)
+            else
             {
-                return HttpNotFound();
+                var songInDb = _context.Songs.Single(s => s.ID == song.ID);
+                songInDb.Title = song.Title;
+                songInDb.Youtube = song.Youtube;
+                songInDb.AlbumId = song.AlbumId;
             }
-            return View(song);
-        }
 
-        // POST: Songs/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
-        {
-            Song song = db.Songs.Find(id);
-            db.Songs.Remove(song);
-            db.SaveChanges();
-            return RedirectToAction("Index");
+            if (!ModelState.IsValid)
+            {
+                var viewModel = new SongFormViewModel()
+                {
+                    Song = song,
+                    Albums = _context.Albums.ToList()
+                };
+                return View("SongForm", viewModel);
+            }
+            else
+            {
+                _context.SaveChanges();
+            }
+            return RedirectToAction("Index", "Songs");
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
+            _context.Dispose();
         }
+
     }
 }

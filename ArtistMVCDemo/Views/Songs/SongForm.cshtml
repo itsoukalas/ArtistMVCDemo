@@ -1,0 +1,39 @@
+﻿@model ArtistMVCDemo.ViewModels.SongFormViewModel
+@{
+    ViewBag.Title = "Song Save";
+}
+
+<h2>Song Save</h2>
+
+@using (Html.BeginForm("Save", "Songs"))
+            {
+    @Html.AntiForgeryToken()
+                <div class="form-group">
+                    @Html.LabelFor(model=>model.Song.Title)
+                    @Html.TextBoxFor(model=>model.Song.Title,new {@class="form-control" } )
+                    @Html.ValidationMessageFor(model=>model.Song.Title,"",new {@class="text-danger" })
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model=>model.Song.Youtube)
+                    @Html.TextBoxFor(model=>model.Song.Youtube,new {@class="form-control"})
+                    @Html.ValidationMessageFor(model=>model.Song.Youtube,"",new { @class="text-danger"})
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Song.AlbumId)
+                    @* first parameters the viewmodel’s property we want the list to refer to (Model.Albums).
+                       second parameter we will pass the property of Album that we want the dropdown list to retrieve as value (ID). 
+                       third parameter the title of the Album *@
+                    @Html.DropDownListFor(model => model.Song.AlbumId, new SelectList(Model.Albums, "ID", "Description"),"Select Album",new {@class="form-control" })
+                    @Html.ValidationMessageFor(model=>model.Song.AlbumId,"",new {@class="text=danger" })
+                </div>
+
+                <input type="submit" value="Save" class="btn btn-default" />
+            }
+
+<div>
+    @Html.ActionLink("Back to List","Index")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    }
