@@ -27,7 +27,16 @@ namespace ArtistMVCDemo.Controllers
                 .Include(s => s.album.Artist)
                 .ToList();
 
-            return View(songs);
+            //Σε περίπτωση που κάνει log in ως Administrator || Editor
+            if (User.IsInRole("Administrator") || User.IsInRole("Editor"))
+            {
+                return View(songs);
+            }
+         
+                //Αλλιως θα κάνει Redirect σε ένα αλλο View
+                return View("SongsIndexWithEdit", songs);
+            
+          
         }
         public ActionResult Details(int? id)
         {
@@ -62,7 +71,8 @@ namespace ArtistMVCDemo.Controllers
             // Return the appropriate view with the viewmodel
             return View("SongForm", viewmodel);
         }
-
+        //Δίνει δικαιώματα για edit σε Administrator || Editor
+        [Authorize(Roles = RoleName.Administrator + ","+RoleName.Editor)]
         public ActionResult Edit(int? id)
         {
             if (id == null)

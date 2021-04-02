@@ -156,10 +156,10 @@ namespace ArtistMVCDemo.Controllers
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    var roleStrore = new RoleStore<IdentityRole>(new ApplicationDbContext);
+                    var roleStrore = new RoleStore<IdentityRole>(new ApplicationDbContext());
                     var roleManager = new RoleManager<IdentityRole>(roleStrore);
                     await roleManager.CreateAsync(new IdentityRole("Administrator"));
-                    await UserManager.AddToRoleAsync(user.Id, "Adminnistrator");
+                    await UserManager.AddToRoleAsync(user.Id, "Administrator");
 
                     await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
                     

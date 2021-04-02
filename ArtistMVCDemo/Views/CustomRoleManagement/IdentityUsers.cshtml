@@ -1,0 +1,15 @@
+﻿@model IEnumerable<ArtistMVCDemo.Models.ApplicationUser>
+@{
+    ViewBag.Title = "IdentityUsers";
+}
+
+<h2>Users</h2>
+
+@foreach (var item in Model)
+            {
+              @item.UserName; <br />
+            }
+{
+
+}
+
